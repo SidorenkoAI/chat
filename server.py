@@ -1,5 +1,5 @@
 import socket
-
+#comment
 HOST = ''
 PORT = 9090
 users = {'Руслан': 'Heckfy', 'Артём': 'Fhn`v', 'Михаил': 'Vb[fbk', 'Анастасия': 'Fyfcnfcbz', 'Ксения': 'Rctybz', 'Антон': 'Fynjy'}
