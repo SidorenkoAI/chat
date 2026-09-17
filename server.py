@@ -15,6 +15,13 @@ server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server.bind((HOST, PORT))
 
 authorized = {}
+def changePass(addr, text):
+    # Ожидаем формат: CHANGE_PASS <старыйпароль> <новый пароль>
+    oldPass = text.split()[1]
+    newPass = text.split()[2]
+    name = authorized[addr]
+    if oldPass == users[name]:
+        server.sendto('верный пароль'.encode('utf-8'), addr)
 
 def checkAcess(text):
     # Ожидаем формат: AUTH <username> <password>
@@ -35,20 +42,22 @@ def checkAcess(text):
     else:
         server.sendto('Требуется авторизация в формате AUTH <username> <password>'.encode('utf-8'), addr)
 
-
 print(f'Сервер запущен на {HOST}:{PORT}')
 while True:
     data, addr = server.recvfrom(1024)
     text = data.decode('utf-8', errors='replace')
+
     # Если клиент ещё не авторизован
     if addr not in authorized:
         checkAcess(text)
         continue  # пока не авторизован — ничего не пересылаем
-
     # Клиент авторизован
+    if text.split()[0] == 'CHANGE_PASS':
+        changePass(addr, text)
+        continue
+
     username = authorized[addr]
     out = f'{username}: {text}'.encode('utf-8')
-
     # Рассылаем всем авторизованным, кроме отправителя
     for client_addr in list(authorized.keys()):
         if client_addr == addr:
