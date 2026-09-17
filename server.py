@@ -22,6 +22,10 @@ def changePass(addr, text):
     name = authorized[addr]
     if oldPass == users[name]:
         server.sendto('верный пароль'.encode('utf-8'), addr)
+        users[name] = newPass
+        with open('users.txt', encoding='utf-8', mode='w') as f:
+            for name in users:
+                print(f'{name} {users[name]}', file=f)
 
 def checkAcess(text):
     # Ожидаем формат: AUTH <username> <password>
