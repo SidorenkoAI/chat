@@ -27,8 +27,7 @@ def changePass(addr, text):
             for name in users:
                 print(f'{name} {users[name]}', file=f)
 
-def checkAcess(text):
-    # Ожидаем формат: AUTH <username> <password>
+def checkAcess():
     parts = text.split()
     if len(parts) == 3 and parts[0] == 'AUTH':
         username, password = parts[1], parts[2]
@@ -46,6 +45,26 @@ def checkAcess(text):
     else:
         server.sendto('Требуется авторизация в формате AUTH <username> <password>'.encode('utf-8'), addr)
 
+def privet(addr):
+    mes = '''Привет! Для начала общения нужно авторизоваться
+            Список доступных команд: help/'''
+    server.sendto(mes.encode('utf-8'), addr)
+
+def help(addr):
+    mes = '''
+        reg/ Регистрация
+        auth/ Авторизация 
+    '''
+    server.sendto(mes.encode('utf-8'), addr)
+
+def cmdRouter(text, addr):
+    if text == 'help/':
+        help(addr)
+    elif text == 'auth/':
+        checkAcess()
+    else:
+        privet(addr)
+
 print(f'Сервер запущен на {HOST}:{PORT}')
 while True:
     data, addr = server.recvfrom(1024)
@@ -53,7 +72,7 @@ while True:
 
     # Если клиент ещё не авторизован
     if addr not in authorized:
-        checkAcess(text)
+        cmdRouter(text, addr)
         continue  # пока не авторизован — ничего не пересылаем
     # Клиент авторизован
     if text.split()[0] == 'CHANGE_PASS':
