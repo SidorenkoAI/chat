@@ -29,9 +29,9 @@ def changePass(addr, text):
             for name in users:
                 print(f'{name} {users[name]}', file=f)
 
-def auth(addr):
+def auth(text, addr):
     parts = text.split()
-    if len(parts) == 3 and parts[0] == 'AUTH':
+    if len(parts) == 3:
         username, password = parts[1], parts[2]
         if username in users:
             if password == users[username]:
@@ -54,9 +54,9 @@ def privet(addr):
 
 def help(addr):
     mes = '''
-        reg/ Регистрация
-        auth/ Авторизация
-        help/ Помощь  
+        reg/   Регистрация  (reg/ <name> <pass>)
+        auth/  Авторизация  (auth/ <name> <pass>)
+        help/  Помощь  
     '''
     server.sendto(mes.encode('utf-8'), addr)
 
@@ -64,7 +64,7 @@ def reg(text, addr):
     if text == 'reg/':
         mes = '''
                 Введите имя и пароль в формате
-                reg/ name pass
+                reg/ <name> <pass>
                 '''
     else:
         name = text.split()[1]
@@ -85,8 +85,8 @@ def reg(text, addr):
 def cmdRouter(text, addr):
     if text == 'help/':
         help(addr)
-    elif text == 'auth/':
-        auth(addr)
+    elif text.split()[0] == 'auth/':
+        auth(text, addr)
     elif text.split()[0] == 'reg/':
         reg(text, addr)
     else:
