@@ -4,16 +4,18 @@ HOST = ''
 PORT = 9090
 users = {}
 authorized = {}
-
-f = open('users.txt', encoding='utf-8')
-for s in f:
-    data = s.split()
-    name = data[0]
-    password = data[1]
-    users[name] = password
-f.close()
 server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server.bind((HOST, PORT))
+
+def updateUsers():
+    global users
+    f = open('users.txt', encoding='utf-8')
+    for s in f:
+        data = s.split()
+        name = data[0]
+        password = data[1]
+        users[name] = password
+    f.close()
 
 def changePass(addr, text):
     # Ожидаем формат: CHANGE_PASS <старыйпароль> <новый пароль>
@@ -70,6 +72,7 @@ def reg(text, addr):
         if name not in users:
             with open('users.txt', encoding='utf-8', mode='a') as f:
                print(f'{name} {pword}', file=f)
+            updateUsers()
             mes = '''
                     Вы зарегистрированы!
                     '''
@@ -90,6 +93,7 @@ def cmdRouter(text, addr):
         privet(addr)
 
 print(f'Сервер запущен на {HOST}:{PORT}')
+updateUsers()
 while True:
     data, addr = server.recvfrom(1024)
     text = data.decode('utf-8', errors='replace')
