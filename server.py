@@ -1,8 +1,9 @@
 import socket
-#comment
+
 HOST = ''
 PORT = 9090
 users = {}
+authorized = {}
 
 f = open('users.txt', encoding='utf-8')
 for s in f:
@@ -10,11 +11,10 @@ for s in f:
     name = data[0]
     password = data[1]
     users[name] = password
-
+f.close()
 server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server.bind((HOST, PORT))
 
-authorized = {}
 def changePass(addr, text):
     # Ожидаем формат: CHANGE_PASS <старыйпароль> <новый пароль>
     oldPass = text.split()[1]
@@ -27,7 +27,7 @@ def changePass(addr, text):
             for name in users:
                 print(f'{name} {users[name]}', file=f)
 
-def checkAcess():
+def auth(addr):
     parts = text.split()
     if len(parts) == 3 and parts[0] == 'AUTH':
         username, password = parts[1], parts[2]
@@ -53,15 +53,39 @@ def privet(addr):
 def help(addr):
     mes = '''
         reg/ Регистрация
-        auth/ Авторизация 
+        auth/ Авторизация
+        help/ Помощь  
     '''
+    server.sendto(mes.encode('utf-8'), addr)
+
+def reg(text, addr):
+    if text == 'reg/':
+        mes = '''
+                Введите имя и пароль в формате
+                reg/ name pass
+                '''
+    else:
+        name = text.split()[1]
+        pword = text.split()[2]
+        if name not in users:
+            with open('users.txt', encoding='utf-8', mode='a') as f:
+               print(f'{name} {pword}', file=f)
+            mes = '''
+                    Вы зарегистрированы!
+                    '''
+        else:
+            mes = '''
+                    Такой пользователь уже зарегистрирован..
+                    '''
     server.sendto(mes.encode('utf-8'), addr)
 
 def cmdRouter(text, addr):
     if text == 'help/':
         help(addr)
     elif text == 'auth/':
-        checkAcess()
+        auth(addr)
+    elif text.split()[0] == 'reg/':
+        reg(text, addr)
     else:
         privet(addr)
 
@@ -70,10 +94,10 @@ while True:
     data, addr = server.recvfrom(1024)
     text = data.decode('utf-8', errors='replace')
 
-    # Если клиент ещё не авторизован
     if addr not in authorized:
         cmdRouter(text, addr)
         continue  # пока не авторизован — ничего не пересылаем
+
     # Клиент авторизован
     if text.split()[0] == 'CHANGE_PASS':
         changePass(addr, text)
