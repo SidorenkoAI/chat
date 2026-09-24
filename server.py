@@ -21,13 +21,15 @@ class Server():
         self.updateUsers()
         print(f'Сервер запущен на {self.HOST}:{self.PORT}')
 
-    def changePass(self, addr, text):
-        #!!ПЕРЕДЕЛАТЬ
+    def changePass(self, text, addr):
+        #!!ПЕРЕДЕЛАТЬ - не доделано
+        if len(text.split()) != 3:
+            return
         oldPass = text.split()[1]
         newPass = text.split()[2]
-        name = authorized[addr]
-        if oldPass == users[name]:
-            server.sendto('верный пароль'.encode('utf-8'), addr)
+        name = self.authorized[addr]
+        if oldPass == self.users[name]:
+            self.server.sendto('верный пароль'.encode('utf-8'), addr)
             users[name] = newPass
             with open('users.txt', encoding='utf-8', mode='w') as f:
                 for name in users:
@@ -60,6 +62,8 @@ class Server():
         mes = '''
             reg/   Регистрация  (reg/ <name> <pass>)
             auth/  Авторизация  (auth/ <name> <pass>)
+            del/   Удалить аккаунт
+            pass/  Поменять пароль
             help/  Помощь  
         '''
         self.server.sendto(mes.encode('utf-8'), addr)
@@ -70,10 +74,10 @@ class Server():
                     Введите имя и пароль в формате
                     reg/ <name> <pass>
                     '''
-        else:
+        elif len(text.split()) == 3:
             name = text.split()[1]
             pword = text.split()[2]
-            if name not in users:
+            if name not in self.users:
                 with open('users.txt', encoding='utf-8', mode='a') as f:
                    print(f'{name} {pword}', file=f)
                 self.updateUsers()
@@ -84,7 +88,18 @@ class Server():
                 mes = '''
                         Такой пользователь уже зарегистрирован..
                         '''
+        else:
+            mes = '''
+                    ОШИБКА КОМАНДЫ
+                    Введите имя и пароль в формате
+                    reg/ <name> <pass>
+                    '''
         self.server.sendto(mes.encode('utf-8'), addr)
+
+    def delUser(self, addr):
+        pass
+
+
 
     def cmdRouter(self, text, addr):
         if text == 'help/':
@@ -93,6 +108,10 @@ class Server():
             self.auth(text, addr)
         elif text.split()[0] == 'reg/':
             self.reg(text, addr)
+        elif text.split()[0] == 'del/':
+            self.delUser(addr)
+        elif text.split()[0] == 'pass/':
+            self.changePass(text, addr)
         else:
             self.privet(addr)
 
