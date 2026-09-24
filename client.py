@@ -6,7 +6,7 @@ def read_sok():
          print(data.decode('utf-8'))
 
 sok = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sok.connect(('localhost', 9090))
+sok.connect(('10.2.1.144', 9090))
 
 potok = threading.Thread(target=read_sok)
 potok.start()
