@@ -1,133 +1,48 @@
 import socket
-class Server():
-    def __init__(self, port):
-        self.HOST = ''
-        self.PORT = port
-        self.users = {}
-        self.authorized = {}
-        self.server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+import threading
 
-    def updateUsers(self):
-        f = open('users.txt', encoding='utf-8')
-        for s in f:
-            data = s.split()
-            name = data[0]
-            password = data[1]
-            self.users[name] = password
-        f.close()
+HOST = "127.0.0.1"
+PORT = 5555
 
-    def start(self):
-        self.server.bind((self.HOST, self.PORT))
-        self.updateUsers()
-        print(f'Сервер запущен на {self.HOST}:{self.PORT}')
-
-    def changePass(self, text, addr):
-        #!!ПЕРЕДЕЛАТЬ - не доделано
-        if len(text.split()) != 3:
-            return
-        oldPass = text.split()[1]
-        newPass = text.split()[2]
-        name = self.authorized[addr]
-        if oldPass == self.users[name]:
-            self.server.sendto('верный пароль'.encode('utf-8'), addr)
-            users[name] = newPass
-            with open('users.txt', encoding='utf-8', mode='w') as f:
-                for name in users:
-                    print(f'{name} {users[name]}', file=f)
-
-    def auth(self, text, addr):
-        parts = text.split()
-        if len(parts) == 3:
-            username, password = parts[1], parts[2]
-            if username in self.users:
-                if password == self.users[username]:
-                    self.authorized[addr] = username
-                    self.server.sendto(b'AUTH_OK', addr)
-                    print(f'Авторизован: {username} ({addr})')
-                else:
-                    self.server.sendto('AUTH_FAIL "Неверный пароль"'.encode('utf-8'), addr)
-                    print(f'Неверный пароль от {addr}')
-            else:
-                self.server.sendto('AUTH_FAIL "Неверный логин"'.encode('utf-8'), addr)
-                print(f'Неверный логин {addr}')
-        else:
-            self.server.sendto('Требуется авторизация в формате AUTH <username> <password>'.encode('utf-8'), addr)
-
-    def privet(self, addr):
-        mes = '''Привет! Для начала общения нужно авторизоваться
-                Список доступных команд: help/'''
-        self.server.sendto(mes.encode('utf-8'), addr)
-
-    def help(self, addr):
-        mes = '''
-            reg/   Регистрация  (reg/ <name> <pass>)
-            auth/  Авторизация  (auth/ <name> <pass>)
-            del/   Удалить аккаунт
-            pass/  Поменять пароль
-            help/  Помощь  
-        '''
-        self.server.sendto(mes.encode('utf-8'), addr)
-
-    def reg(self, text, addr):
-        if text == 'reg/':
-            mes = '''
-                    Введите имя и пароль в формате
-                    reg/ <name> <pass>
-                    '''
-        elif len(text.split()) == 3:
-            name = text.split()[1]
-            pword = text.split()[2]
-            if name not in self.users:
-                with open('users.txt', encoding='utf-8', mode='a') as f:
-                   print(f'{name} {pword}', file=f)
-                self.updateUsers()
-                mes = '''
-                        Вы зарегистрированы!
-                        '''
-            else:
-                mes = '''
-                        Такой пользователь уже зарегистрирован..
-                        '''
-        else:
-            mes = '''
-                    ОШИБКА КОМАНДЫ
-                    Введите имя и пароль в формате
-                    reg/ <name> <pass>
-                    '''
-        self.server.sendto(mes.encode('utf-8'), addr)
-
-    def delUser(self, addr):
-        pass
+clients = []
+clients_lock = threading.Lock()
 
 
+def broadcast(text: str) -> None:
+    with clients_lock:
+        for conn in clients:
+            conn.sendall((text + "\n").encode("utf-8"))
 
-    def cmdRouter(self, text, addr):
-        if text == 'help/':
-            self.help(addr)
-        elif text.split()[0] == 'auth/':
-            self.auth(text, addr)
-        elif text.split()[0] == 'reg/':
-            self.reg(text, addr)
-        elif text.split()[0] == 'del/':
-            self.delUser(addr)
-        elif text.split()[0] == 'pass/':
-            self.changePass(text, addr)
-        else:
-            self.privet(addr)
 
-    def recive(self):
-        data, addr = self.server.recvfrom(1024)
-        text = data.decode('utf-8', errors='replace')
-        if addr not in self.authorized:
-            self.cmdRouter(text, addr)
-            return (False, False)
+def handle_client(conn: socket.socket, addr) -> None:
+    print(f"Подключился клиент {addr}")
+    with clients_lock:
+        clients.append(conn)
 
-        return (text, addr)
+    incoming = conn.makefile("r", encoding="utf-8", newline="\n")
+    try:
+        for line in incoming:
+            text = line.rstrip("\n")
+            print(f"{addr}: {text}")
+            broadcast(f"{addr}: {text}")
+    finally:
+        with clients_lock:
+            clients.remove(conn)
+        conn.close()
+        print(f"Клиент {addr} отключился")
 
-    def sendAll(self, text, addr):
-        out = f'{self.authorized[addr]}: {text}'.encode('utf-8')
-        # Рассылаем всем авторизованным, кроме отправителя
-        for client_addr in list(self.authorized.keys()):
-            if client_addr == addr:
-                continue
-            self.server.sendto(out, client_addr)
+
+def main():
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server_socket.bind((HOST, PORT))
+    server_socket.listen()
+    print(f"Сервер слушает {HOST}:{PORT}")
+
+    while True:
+        conn, addr = server_socket.accept()
+        threading.Thread(target=handle_client, args=(conn, addr), daemon=True).start()
+
+
+if __name__ == "__main__":
+    main()
