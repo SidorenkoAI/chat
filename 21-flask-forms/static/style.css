@@ -1,0 +1,224 @@
+/* Цвета чата — в одном месте: поменяли здесь, поменялось везде */
+:root {
+  --bg: #eef1f6;
+  --panel: #ffffff;
+  --text: #1f2430;
+  --muted: #6f7687;
+  --line: #dde1ea;
+  --accent: #4f6bed;
+  --private: #8a5cd6;
+}
+
+/* Страница занимает всё окно: шапка сверху, форма снизу, сообщения — посередине */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 16px;
+}
+
+/* ---------- шапка ---------- */
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+/* меню: ссылки в шапке */
+nav {
+  display: flex;
+  gap: 16px;
+}
+
+nav a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- середина: сообщения + список «в сети» ---------- */
+
+main {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+#messages {
+  flex: 1;
+  display: flex;
+  /* «снизу вверх»: первый элемент — внизу. Заодно прокрутка списка
+     начинается снизу, и после загрузки страницы видны новые сообщения */
+  flex-direction: column-reverse;
+  gap: 8px;
+  padding: 16px 20px;
+  overflow-y: auto;
+}
+
+.message {
+  max-width: 70%;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  align-self: flex-start;
+}
+
+.message .author {
+  display: block;
+  font-size: 13px;
+  color: var(--accent);
+}
+
+/* свои сообщения — справа и синие */
+.message.mine {
+  align-self: flex-end;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.message.mine .author {
+  color: white;
+}
+
+/* время — мелко и серо, в правом нижнем углу «пузыря» */
+.message time {
+  display: block;
+  text-align: right;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.message.mine time {
+  color: #dfe5ff;
+}
+
+/* личные — с фиолетовой рамкой */
+.message.private {
+  border: 2px dashed var(--private);
+}
+
+.message.private .author {
+  color: var(--private);
+}
+
+/* системные — по центру, мелко и серо, без «пузыря» */
+.message.system {
+  align-self: center;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+aside {
+  width: 200px;
+  padding: 16px 20px;
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+}
+
+aside h2 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+#online {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#online li {
+  padding: 4px 0;
+}
+
+#online li::before {
+  content: "● ";
+  color: #2e9d62;
+}
+
+/* ---------- обычная страница с текстом («О чате») ---------- */
+
+.page {
+  display: block;
+  max-width: 700px;
+  padding: 16px 20px;
+  overflow-y: auto;
+}
+
+/* ---------- форма отправки ---------- */
+
+footer {
+  padding: 10px 20px;
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+}
+
+#send-form {
+  display: flex;
+  gap: 8px;
+}
+
+#name {
+  width: 140px;
+  padding: 10px 12px;
+  font-size: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+#text {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+button {
+  padding: 10px 18px;
+  font-size: 16px;
+  color: white;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.85;
+}
+
+/* ошибка над формой и подсказка под ней */
+.error {
+  margin: 0 0 8px;
+  color: #d93f4c;
+}
+
+.hint {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}

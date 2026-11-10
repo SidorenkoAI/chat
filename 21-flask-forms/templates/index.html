@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main>
+  <section id="messages">
+    <!-- Сообщения идут в обратном порядке — новые первыми. А CSS (column-reverse)
+         ставит первое в HTML вниз: на экране новые сообщения внизу, как в мессенджере -->
+    {% for m in messages|reverse %}
+      <div class="message {% if m.author == name %}mine{% endif %}">
+        <b class="author">{{ m.author }}</b>
+        <span class="text">{{ m.text }}</span>
+        <time>{{ m.time }}</time>
+      </div>
+    {% else %}
+      <div class="message system">Сообщений пока нет. Напишите первым!</div>
+    {% endfor %}
+  </section>
+</main>
+
+<footer>
+  {% if error %}
+    <p class="error">{{ error }}</p>
+  {% endif %}
+
+  <!-- method="post": данные уйдут в теле запроса; action — куда отправить -->
+  <form id="send-form" method="post" action="{{ url_for('send') }}">
+    <input id="name" name="name" type="text" placeholder="Имя" value="{{ name }}" maxlength="30" required>
+    <input id="text" name="text" type="text" placeholder="Сообщение…" value="{{ text }}"
+           maxlength="500" autocomplete="off" required autofocus>
+    <button type="submit">Отправить</button>
+  </form>
+
+  <p class="hint">
+    Новые сообщения сами не появятся:
+    <a href="{{ url_for('index', name=name) }}">🔄 обновить</a>
+  </p>
+</footer>
+{% endblock %}

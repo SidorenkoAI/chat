@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main>
+  <section id="messages">
+    {% for m in messages %}
+      {% if m.author is none %}
+        <div class="message system">{{ m.text }}</div>
+      {% else %}
+        <div class="message {% if m.author == me %}mine{% endif %}">
+          <b class="author">{{ m.author }}</b>
+          <span class="text">{{ m.text }}</span>
+          <time>{{ m.time }}</time>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </section>
+
+  <aside>
+    <h2>В сети: {{ online|length }}</h2>
+    <ul id="online">
+      {% for name in online %}
+        <li>{{ name }}</li>
+      {% endfor %}
+    </ul>
+  </aside>
+</main>
+
+<footer>
+  <!-- Форма пока ничего не отправляет — она заработает на следующем уроке -->
+  <form id="send-form">
+    <input id="text" type="text" placeholder="Сообщение…" autocomplete="off">
+    <button type="submit">Отправить</button>
+  </form>
+</footer>
+{% endblock %}
