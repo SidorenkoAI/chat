@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Школьный чат</title>
+</head>
+<body>
+  <header>
+    <h1>Школьный чат</h1>
+    <p>Вы вошли как <b>Аня</b></p>
+  </header>
+
+  <main>
+    <section id="messages">
+      <div class="message system">Боря присоединился к чату</div>
+
+      <div class="message">
+        <b class="author">Боря</b>
+        <span class="text">Привет всем!</span>
+      </div>
+
+      <div class="message mine">
+        <b class="author">Аня</b>
+        <span class="text">Привет! Кто сделал домашку по алгебре?</span>
+      </div>
+
+      <div class="message private">
+        <b class="author">Лично от Вовы</b>
+        <span class="text">Я сделал, могу объяснить</span>
+      </div>
+    </section>
+
+    <aside>
+      <h2>В сети</h2>
+      <ul id="online">
+        <li>Аня</li>
+        <li>Боря</li>
+        <li>Вова</li>
+      </ul>
+    </aside>
+  </main>
+
+  <footer>
+    <form id="send-form">
+      <input id="text" type="text" placeholder="Сообщение…" autocomplete="off">
+      <button type="submit">Отправить</button>
+    </form>
+  </footer>
+</body>
+</html>
